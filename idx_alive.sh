@@ -102,12 +102,16 @@ if [ ! -f /usr/local/bin/ngrok ]; then
   wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -qO- | tar -xz -C /usr/local/bin
 fi
 
-# 查找可用的 API 端口（从4040开始）
+# 检查并释放 4040 端口
+if nc -z localhost 4040 2>/dev/null; then
+  PID_4040=$(lsof -i:4040 -t 2>/dev/null)
+  if [[ -n "$PID_4040" ]]; then
+    echo -e "${YELLOW}检测到 4040 端口被占用，尝试释放...${RESET}"
+    kill -9 $PID_4040
+    sleep 1
+  fi
+fi
 NGROK_API_PORT=4040
-while nc -z localhost $NGROK_API_PORT 2>/dev/null; do
-  NGROK_API_PORT=$((NGROK_API_PORT + 1))
-  echo -e "${YELLOW}检测到端口 $((NGROK_API_PORT - 1)) 已被占用，尝试使用端口 ${NGROK_API_PORT}...${RESET}"
-done
 
 # 使用 nohup 在后台运行 ngrok
 pkill -f "ngrok http ${FIREFOX_PORT} --name firefox" >/dev/null 2>&1 || true
@@ -130,4 +134,4 @@ echo ""
 echo -e "${YELLOW}注意: Docker 容器设置为自动重启，除非手动停止${RESET}"
 echo -e "${YELLOW}注意: Ngrok 进程在后台运行，如需停止请使用 'pkill -f \"ngrok http ${FIREFOX_PORT} --name firefox\"' 命令${RESET}"
 echo -e "${YELLOW}注意: 这是一个 IDX 保活方案，请确保定期访问以保持活跃状态${RESET}"
-echo ""
+echo "" 
