@@ -18,8 +18,11 @@ for cmd in docker wget curl nc; do
       docker)
         echo -e "${YELLOW}安装命令（Debian/Ubuntu）：${RESET} apt update && apt install -y docker.io"
         ;;
-      wget|curl|nc)
+      wget|curl)
         echo -e "${YELLOW}安装命令（Debian/Ubuntu）：${RESET} apt update && apt install -y $cmd"
+        ;;
+      nc)
+        echo -e "${YELLOW}安装命令（Debian/Ubuntu）：${RESET} apt update && apt install -y netcat-openbsd"
         ;;
     esac
     exit 1
@@ -99,8 +102,8 @@ if [ ! -f /usr/local/bin/ngrok ]; then
   wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -qO- | tar -xz -C /usr/local/bin
 fi
 
-# 查找可用的 API 端口
-NGROK_API_PORT=4041
+# 查找可用的 API 端口（从4040开始）
+NGROK_API_PORT=4040
 while nc -z localhost $NGROK_API_PORT 2>/dev/null; do
   NGROK_API_PORT=$((NGROK_API_PORT + 1))
   echo -e "${YELLOW}检测到端口 $((NGROK_API_PORT - 1)) 已被占用，尝试使用端口 ${NGROK_API_PORT}...${RESET}"
